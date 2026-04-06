@@ -54,6 +54,15 @@ void CChildView::InitGL()
 	m_bunny.m_program = LoadShaders("ShaderWnd/vertex.glsl", "ShaderWnd/fragment.glsl");
 	m_bunny.InitGL();
 
+	m_fishTex.LoadFile(L"models/BLUEGILL.bmp");
+	m_fish.LoadOBJ("models\\fish4.obj");
+	m_fish.m_program = LoadShaders("ShaderWnd/vertex.glsl", "ShaderWnd/fragment.glsl");
+	m_fish.InitGL();
+
+	m_cat.LoadOBJ("models\\cat.obj");
+	m_cat.m_program = LoadShaders("ShaderWnd/vertexSphere2.glsl", "ShaderWnd/fragmentSphere2.glsl");
+	m_cat.InitGL();
+
 	m_heightTex.LoadFile(L"textures/height.bmp");
 	m_sphereTex.LoadFile(L"textures/bumpmap.jpg");
 	m_sphere.SetRadius(3);
@@ -66,10 +75,6 @@ void CChildView::InitGL()
 	m_skybox.CreateCube();
 	m_skybox.m_program = LoadShaders("ShaderWnd/vertexSky.glsl", "ShaderWnd/fragmentSky.glsl");
 	m_skybox.InitGL();
-
-	m_metallicSphere.SetRadius(3);
-	m_metallicSphere.m_program = LoadShaders("ShaderWnd/vertexSphere2.glsl", "ShaderWnd/fragmentSphere2.glsl");
-	m_metallicSphere.InitGL();
 }
 
 void CChildView::RenderGL()
@@ -136,6 +141,53 @@ void CChildView::RenderGL()
 
 	m_sphere.RenderGL();
 
+	m_program = m_cat.m_program;
+	glUseProgram(m_program);
+
+	glUniform1i(glGetUniformLocation(m_program, "env_map"), 0);
+
+	m_nPVM = glGetUniformLocation(m_program, "mPVM");
+	m_nVM = glGetUniformLocation(m_program, "mVM");
+
+	M = translate(mat4(1.f), vec3(12.f, -0.8f, -1.5f))
+		* rotate(mat4(1.f), 180.f, vec3(0.f, 1.f, 0.f))
+		* scale(mat4(1.f), vec3(0.35f));
+	VM = m_mVM * M;
+	PVM = m_mPVM * M;
+
+	glUniformMatrix4fv(m_nPVM, 1, GL_FALSE, value_ptr(PVM));
+	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(VM));
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeTex.TexName());
+	m_cat.RenderGL();
+
+	m_program = m_fish.m_program;
+	glUseProgram(m_program);
+
+	glUniform1i(glGetUniformLocation(m_program, "diffuse_mat"), 0);
+
+	m_nPVM = glGetUniformLocation(m_program, "mPVM");
+	m_nVM = glGetUniformLocation(m_program, "mVM");
+
+	M = translate(mat4(1.f), vec3(12.f, -1.2f, 2.2f))
+		* rotate(mat4(1.f), -30.f, vec3(0.f, 1.f, 0.f))
+		* scale(mat4(1.f), vec3(0.7f));
+	VM = m_mVM * M;
+	PVM = m_mPVM * M;
+
+	glUniformMatrix4fv(m_nPVM, 1, GL_FALSE, value_ptr(PVM));
+	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(VM));
+
+	glUniform4fv(glGetUniformLocation(m_program, "AmbientProduct"), 1, value_ptr(ambient_product));
+	glUniform4fv(glGetUniformLocation(m_program, "DiffuseProduct"), 1, value_ptr(diffuse_product));
+	glUniform4fv(glGetUniformLocation(m_program, "SpecularProduct"), 1, value_ptr(specular_product));
+	glUniform4fv(glGetUniformLocation(m_program, "LightPosition"), 1, value_ptr(light_position));
+	glUniform1f(glGetUniformLocation(m_program, "Shininess"), material_shininess);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_fishTex.TexName());
+	m_fish.RenderGL();
+
 	m_program = m_skybox.m_program;
 	glUseProgram(m_program);
 	glUniform1i(glGetUniformLocation(m_program, "skybox"), 0);
@@ -150,34 +202,18 @@ void CChildView::RenderGL()
 	glDepthFunc(GL_LEQUAL);
 	m_skybox.RenderGL();
 	glDepthFunc(GL_LESS);
-
-	m_program = m_metallicSphere.m_program;
-	glUseProgram(m_program);
-
-	glUniform1i(glGetUniformLocation(m_program, "env_map"), 0);
-
-	m_nPVM = glGetUniformLocation(m_program, "mPVM");
-	m_nVM = glGetUniformLocation(m_program, "mVM");
-
-	M = translate(mat4(1.f), vec3(10., 0., 0.));
-	VM = m_mVM * M;
-	PVM = m_mPVM * M;
-
-	glUniformMatrix4fv(m_nPVM, 1, GL_FALSE, value_ptr(PVM));
-	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(VM));
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeTex.TexName());
-	m_metallicSphere.RenderGL();
 }
 
 void CChildView::CleanGL()
 {
 	m_bunny.CleanGL();
 	m_bunnyTex.Clear();
+	m_fish.CleanGL();
+	m_fishTex.Clear();
+	m_cat.CleanGL();
 	m_sphere.CleanGL();
 	m_sphereTex.Clear();
 	m_heightTex.Clear();
 	m_skybox.CleanGL();
 	m_cubeTex.Clear();
-	m_metallicSphere.CleanGL();
 }
