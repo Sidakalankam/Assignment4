@@ -38,12 +38,14 @@ public:
 
 	CGrTexture m_bunnyTex;
 	CGrTexture m_fishTex;
+	CGrTexture m_prismTex;
 	CGrTexture m_sphereTex;
 	CGrTexture m_heightTex;
 	CGrCubeTexture m_cubeTex;
 	CMesh m_bunny;
 	CMesh m_cat;
 	CMesh m_fish;
+	CMesh m_prism;
 	CSphere m_sphere;
 	CMesh m_skybox;
 

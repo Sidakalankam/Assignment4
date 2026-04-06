@@ -6,6 +6,7 @@
 #include "framework.h"
 #include "Assignment4.h"
 #include "ChildView.h"
+#include <cmath>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -58,6 +59,99 @@ void CChildView::InitGL()
 	m_fish.LoadOBJ("models\\fish4.obj");
 	m_fish.m_program = LoadShaders("ShaderWnd/vertex.glsl", "ShaderWnd/fragment.glsl");
 	m_fish.InitGL();
+
+	m_prismTex.LoadFile(L"textures/plank01.bmp");
+	const int prismSides = 10;
+	const float prismRadius = 2.0f;
+	const float prismHalfHeight = 1.5f;
+	const float kPi = 3.14159265358979323846f;
+	int vIndex = 0;
+	int nIndex = 0;
+	int tIndex = 0;
+
+	// Side faces (each quad split into two triangles)
+	for (int i = 0; i < prismSides; i++)
+	{
+		float a0 = 2.0f * kPi * (float)i / (float)prismSides;
+		float a1 = 2.0f * kPi * (float)(i + 1) / (float)prismSides;
+		float u0 = (float)i / (float)prismSides;
+		float u1 = (float)(i + 1) / (float)prismSides;
+
+		m_prism.AddVertex(vec3(prismRadius * cosf(a0), -prismHalfHeight, prismRadius * sinf(a0))); // v0
+		m_prism.AddVertex(vec3(prismRadius * cosf(a0), prismHalfHeight, prismRadius * sinf(a0)));  // v1
+		m_prism.AddVertex(vec3(prismRadius * cosf(a1), prismHalfHeight, prismRadius * sinf(a1)));  // v2
+		m_prism.AddVertex(vec3(prismRadius * cosf(a1), -prismHalfHeight, prismRadius * sinf(a1))); // v3
+
+		float am = 0.5f * (a0 + a1);
+		m_prism.AddNormal(vec3(cosf(am), 0.f, sinf(am)));
+
+		m_prism.AddTexCoord(vec2(u0, 0.f));
+		m_prism.AddTexCoord(vec2(u0, 1.f));
+		m_prism.AddTexCoord(vec2(u1, 1.f));
+		m_prism.AddTexCoord(vec2(u1, 0.f));
+
+		m_prism.AddTriangleVertex(vIndex + 0, nIndex, tIndex + 0);
+		m_prism.AddTriangleVertex(vIndex + 1, nIndex, tIndex + 1);
+		m_prism.AddTriangleVertex(vIndex + 2, nIndex, tIndex + 2);
+		m_prism.AddTriangleVertex(vIndex + 0, nIndex, tIndex + 0);
+		m_prism.AddTriangleVertex(vIndex + 2, nIndex, tIndex + 2);
+		m_prism.AddTriangleVertex(vIndex + 3, nIndex, tIndex + 3);
+
+		vIndex += 4;
+		nIndex += 1;
+		tIndex += 4;
+	}
+
+	// Top cap
+	m_prism.AddNormal(vec3(0.f, 1.f, 0.f));
+	int topNormalIndex = nIndex++;
+	for (int i = 0; i < prismSides; i++)
+	{
+		float a0 = 2.0f * kPi * (float)i / (float)prismSides;
+		float a1 = 2.0f * kPi * (float)(i + 1) / (float)prismSides;
+
+		m_prism.AddVertex(vec3(0.f, prismHalfHeight, 0.f));
+		m_prism.AddVertex(vec3(prismRadius * cosf(a0), prismHalfHeight, prismRadius * sinf(a0)));
+		m_prism.AddVertex(vec3(prismRadius * cosf(a1), prismHalfHeight, prismRadius * sinf(a1)));
+
+		m_prism.AddTexCoord(vec2(0.5f, 0.5f));
+		m_prism.AddTexCoord(vec2(0.5f + 0.5f * cosf(a0), 0.5f + 0.5f * sinf(a0)));
+		m_prism.AddTexCoord(vec2(0.5f + 0.5f * cosf(a1), 0.5f + 0.5f * sinf(a1)));
+
+		m_prism.AddTriangleVertex(vIndex + 0, topNormalIndex, tIndex + 0);
+		m_prism.AddTriangleVertex(vIndex + 1, topNormalIndex, tIndex + 1);
+		m_prism.AddTriangleVertex(vIndex + 2, topNormalIndex, tIndex + 2);
+
+		vIndex += 3;
+		tIndex += 3;
+	}
+
+	// Bottom cap
+	m_prism.AddNormal(vec3(0.f, -1.f, 0.f));
+	int bottomNormalIndex = nIndex++;
+	for (int i = 0; i < prismSides; i++)
+	{
+		float a0 = 2.0f * kPi * (float)i / (float)prismSides;
+		float a1 = 2.0f * kPi * (float)(i + 1) / (float)prismSides;
+
+		m_prism.AddVertex(vec3(0.f, -prismHalfHeight, 0.f));
+		m_prism.AddVertex(vec3(prismRadius * cosf(a1), -prismHalfHeight, prismRadius * sinf(a1)));
+		m_prism.AddVertex(vec3(prismRadius * cosf(a0), -prismHalfHeight, prismRadius * sinf(a0)));
+
+		m_prism.AddTexCoord(vec2(0.5f, 0.5f));
+		m_prism.AddTexCoord(vec2(0.5f + 0.5f * cosf(a1), 0.5f + 0.5f * sinf(a1)));
+		m_prism.AddTexCoord(vec2(0.5f + 0.5f * cosf(a0), 0.5f + 0.5f * sinf(a0)));
+
+		m_prism.AddTriangleVertex(vIndex + 0, bottomNormalIndex, tIndex + 0);
+		m_prism.AddTriangleVertex(vIndex + 1, bottomNormalIndex, tIndex + 1);
+		m_prism.AddTriangleVertex(vIndex + 2, bottomNormalIndex, tIndex + 2);
+
+		vIndex += 3;
+		tIndex += 3;
+	}
+
+	m_prism.m_program = LoadShaders("ShaderWnd/vertex.glsl", "ShaderWnd/fragment.glsl");
+	m_prism.InitGL();
 
 	m_cat.LoadOBJ("models\\cat.obj");
 	m_cat.m_program = LoadShaders("ShaderWnd/vertexSphere2.glsl", "ShaderWnd/fragmentSphere2.glsl");
@@ -188,6 +282,33 @@ void CChildView::RenderGL()
 	glBindTexture(GL_TEXTURE_2D, m_fishTex.TexName());
 	m_fish.RenderGL();
 
+	m_program = m_prism.m_program;
+	glUseProgram(m_program);
+
+	glUniform1i(glGetUniformLocation(m_program, "diffuse_mat"), 0);
+
+	m_nPVM = glGetUniformLocation(m_program, "mPVM");
+	m_nVM = glGetUniformLocation(m_program, "mVM");
+
+	M = translate(mat4(1.f), vec3(-4.f, -0.2f, 8.f))
+		* rotate(mat4(1.f), 18.f, vec3(0.f, 1.f, 0.f))
+		* scale(mat4(1.f), vec3(0.85f));
+	VM = m_mVM * M;
+	PVM = m_mPVM * M;
+
+	glUniformMatrix4fv(m_nPVM, 1, GL_FALSE, value_ptr(PVM));
+	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(VM));
+
+	glUniform4fv(glGetUniformLocation(m_program, "AmbientProduct"), 1, value_ptr(ambient_product));
+	glUniform4fv(glGetUniformLocation(m_program, "DiffuseProduct"), 1, value_ptr(diffuse_product));
+	glUniform4fv(glGetUniformLocation(m_program, "SpecularProduct"), 1, value_ptr(specular_product));
+	glUniform4fv(glGetUniformLocation(m_program, "LightPosition"), 1, value_ptr(light_position));
+	glUniform1f(glGetUniformLocation(m_program, "Shininess"), material_shininess);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_prismTex.TexName());
+	m_prism.RenderGL();
+
 	m_program = m_skybox.m_program;
 	glUseProgram(m_program);
 	glUniform1i(glGetUniformLocation(m_program, "skybox"), 0);
@@ -210,6 +331,8 @@ void CChildView::CleanGL()
 	m_bunnyTex.Clear();
 	m_fish.CleanGL();
 	m_fishTex.Clear();
+	m_prism.CleanGL();
+	m_prismTex.Clear();
 	m_cat.CleanGL();
 	m_sphere.CleanGL();
 	m_sphereTex.Clear();
