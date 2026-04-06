@@ -2,6 +2,7 @@
 #include <fstream>      // For input streams from files
 #include <string>       // For the string type
 #include <sstream>      // For streams from strings
+#include <cstdlib>      // For atoi
 #include "Mesh.h"
 using namespace std;
 
@@ -18,12 +19,31 @@ CMesh::~CMesh(void)
 
 void CMesh::InitGL()
 {
+	vertexArray.clear();
+	normalArray.clear();
+	texArray.clear();
+
     for(PTV v=m_triangles.begin();  v!=m_triangles.end();  v++)
     {
-		normalArray.push_back(m_normals[v->n]);
-		vertexArray.push_back(m_vertices[v->v]);
-		texArray.push_back(m_tvertices[v->t]);
+		const TV &tv = *v;
+		if(tv.v < 0 || tv.v >= int(m_vertices.size()))
+			continue;
+
+		vertexArray.push_back(m_vertices[tv.v]);
+
+		if(tv.n >= 0 && tv.n < int(m_normals.size()))
+			normalArray.push_back(m_normals[tv.n]);
+		else
+			normalArray.push_back(glm::vec3(0.f, 0.f, 1.f));
+
+		if(tv.t >= 0 && tv.t < int(m_tvertices.size()))
+			texArray.push_back(m_tvertices[tv.t]);
+		else
+			texArray.push_back(glm::vec2(0.f, 0.f));
 	}
+
+	if(vertexArray.empty())
+		return;
 
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);
@@ -181,13 +201,50 @@ void CMesh::LoadOBJ(const char* filename)
         }
         else if(code == "f")
         {
-			for(int i=0;  i<3;  i++)
-            {
-                char slash;
-                int v, t, n;
-                lstr >> v >> slash >> t >> slash >> n;
-                AddTriangleVertex(v-1, n-1, t-1);
-            }
+			vector<TV> face;
+			string token;
+			while(lstr >> token)
+			{
+				TV tv;
+				tv.v = -1;
+				tv.t = -1;
+				tv.n = -1;
+
+				int part = 0;
+				string cur;
+				for(size_t i = 0; i <= token.size(); i++)
+				{
+					if(i == token.size() || token[i] == '/')
+					{
+						if(!cur.empty())
+						{
+							int idx = atoi(cur.c_str());
+							if(idx > 0)
+							{
+								if(part == 0) tv.v = idx - 1;
+								else if(part == 1) tv.t = idx - 1;
+								else if(part == 2) tv.n = idx - 1;
+							}
+						}
+
+						cur.clear();
+						part++;
+					}
+					else
+					{
+						cur.push_back(token[i]);
+					}
+				}
+
+				face.push_back(tv);
+			}
+
+			for(size_t i = 1; i + 1 < face.size(); i++)
+			{
+				AddTriangleVertex(face[0].v, face[0].n, face[0].t);
+				AddTriangleVertex(face[i].v, face[i].n, face[i].t);
+				AddTriangleVertex(face[i + 1].v, face[i + 1].n, face[i + 1].t);
+			}
         }
 
     }

@@ -198,6 +198,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ShaderWnd\ShaderWnd.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Torus.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -216,6 +217,7 @@
     <ClCompile Include="ShaderWnd\glew.cpp" />
     <ClCompile Include="ShaderWnd\ShaderWnd.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="Torus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Assignment4.rc" />
