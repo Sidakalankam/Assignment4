@@ -131,5 +131,13 @@ void CSphere::RenderGL()
 {
 	glUseProgram(m_program);
 	glBindVertexArray(m_vao);
-	glDrawArrays(GL_TRIANGLES, 0, vertexArray.size());
+	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray.size()));
+}
+
+void CSphere::CleanGL()
+{
+	glDeleteBuffers(1, &m_vertexVBO);
+	glDeleteBuffers(1, &m_normalVBO);
+	glDeleteBuffers(1, &m_texVBO);
+	glDeleteVertexArrays(1, &m_vao);
 }
