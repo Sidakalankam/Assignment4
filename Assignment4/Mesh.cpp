@@ -170,7 +170,9 @@ void CMesh::LoadOBJ(const char* filename)
 	 ifstream str(filename);
     if(!str)
     {
-        AfxMessageBox(L"File not found");
+		CString msg;
+		msg.Format(L"File not found: %hs", filename);
+        AfxMessageBox(msg);
         return;
     }
 
