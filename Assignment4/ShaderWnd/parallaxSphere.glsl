@@ -37,9 +37,9 @@ void main()
            if (depth > next_depth)
                break;
            depth += depth_delta;
-           //depth_delta -= shift * delta * delta * curvature;
-           //if (depth < 0)
-           //    discard;
+           depth_delta -= shift * delta * delta * curvature;
+           if (depth < 0)
+               discard;
            displaced_texCoord += vec2(displacement.x * (1. / sin(displaced_texCoord.y*3.1415926/6.)), displacement.y);
            next_depth = ( texture(height_map, displaced_texCoord)[0]) * scale;
        }

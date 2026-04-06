@@ -54,9 +54,10 @@ void CChildView::InitGL()
 	m_bunny.m_program = LoadShaders("ShaderWnd/vertex.glsl", "ShaderWnd/fragment.glsl");
 	m_bunny.InitGL();
 
+	m_heightTex.LoadFile(L"textures/height.bmp");
 	m_sphereTex.LoadFile(L"textures/bumpmap.jpg");
 	m_sphere.SetRadius(3);
-	m_sphere.m_program = LoadShaders("ShaderWnd/vertexSphere.glsl", "ShaderWnd/fragmentSphere.glsl");
+	m_sphere.m_program = LoadShaders("ShaderWnd/vertexSphere.glsl", "ShaderWnd/parallaxSphere.glsl");
 	m_sphere.InitGL();
 }
 
@@ -105,6 +106,7 @@ void CChildView::RenderGL()
 	glUseProgram(m_program);
 
 	glUniform1i(glGetUniformLocation(m_program, "bump_map"), 0);
+	glUniform1i(glGetUniformLocation(m_program, "height_map"), 1);
 
 	m_nPVM = glGetUniformLocation(m_program, "mPVM");
 	m_nVM = glGetUniformLocation(m_program, "mVM");
@@ -118,6 +120,8 @@ void CChildView::RenderGL()
 	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(VM));
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_sphereTex.TexName());
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_heightTex.TexName());
 
 	m_sphere.RenderGL();
 }
@@ -128,4 +132,5 @@ void CChildView::CleanGL()
 	m_bunnyTex.Clear();
 	m_sphere.CleanGL();
 	m_sphereTex.Clear();
+	m_heightTex.Clear();
 }
