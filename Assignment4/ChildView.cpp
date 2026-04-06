@@ -66,6 +66,10 @@ void CChildView::InitGL()
 	m_skybox.CreateCube();
 	m_skybox.m_program = LoadShaders("ShaderWnd/vertexSky.glsl", "ShaderWnd/fragmentSky.glsl");
 	m_skybox.InitGL();
+
+	m_metallicSphere.SetRadius(3);
+	m_metallicSphere.m_program = LoadShaders("ShaderWnd/vertexSphere2.glsl", "ShaderWnd/fragmentSphere2.glsl");
+	m_metallicSphere.InitGL();
 }
 
 void CChildView::RenderGL()
@@ -146,6 +150,24 @@ void CChildView::RenderGL()
 	glDepthFunc(GL_LEQUAL);
 	m_skybox.RenderGL();
 	glDepthFunc(GL_LESS);
+
+	m_program = m_metallicSphere.m_program;
+	glUseProgram(m_program);
+
+	glUniform1i(glGetUniformLocation(m_program, "env_map"), 0);
+
+	m_nPVM = glGetUniformLocation(m_program, "mPVM");
+	m_nVM = glGetUniformLocation(m_program, "mVM");
+
+	M = translate(mat4(1.f), vec3(10., 0., 0.));
+	VM = m_mVM * M;
+	PVM = m_mPVM * M;
+
+	glUniformMatrix4fv(m_nPVM, 1, GL_FALSE, value_ptr(PVM));
+	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(VM));
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeTex.TexName());
+	m_metallicSphere.RenderGL();
 }
 
 void CChildView::CleanGL()
@@ -157,4 +179,5 @@ void CChildView::CleanGL()
 	m_heightTex.Clear();
 	m_skybox.CleanGL();
 	m_cubeTex.Clear();
+	m_metallicSphere.CleanGL();
 }
