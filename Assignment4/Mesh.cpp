@@ -57,6 +57,14 @@ void CMesh::RenderGL()
 	glDrawArrays(GL_TRIANGLES, 0, vertexArray.size());
 }
 
+void CMesh::CleanGL()
+{
+	glDeleteBuffers(1, &m_vertexVBO);
+	glDeleteBuffers(1, &m_normalVBO);
+	glDeleteBuffers(1, &m_texVBO);
+	glDeleteVertexArrays(1, &m_vao);
+}
+
 void CMesh::AddTriangleVertex(int v, int n, int t)
 {
     TV tv;
