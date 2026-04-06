@@ -74,7 +74,7 @@ void CMesh::RenderGL()
 {
 	glUseProgram(m_program);
 	glBindVertexArray(m_vao);
-	glDrawArrays(GL_TRIANGLES, 0, vertexArray.size());
+	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray.size()));
 }
 
 void CMesh::CleanGL()
