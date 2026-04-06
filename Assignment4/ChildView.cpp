@@ -59,6 +59,13 @@ void CChildView::InitGL()
 	m_sphere.SetRadius(3);
 	m_sphere.m_program = LoadShaders("ShaderWnd/vertexSphere.glsl", "ShaderWnd/parallaxSphere.glsl");
 	m_sphere.InitGL();
+
+	m_cubeTex.LoadFiles(L"textures/right.jpg", L"textures/left.jpg", L"textures/top.jpg",
+		L"textures/bottom.jpg", L"textures/front.jpg", L"textures/back.jpg");
+
+	m_skybox.CreateCube();
+	m_skybox.m_program = LoadShaders("ShaderWnd/vertexSky.glsl", "ShaderWnd/fragmentSky.glsl");
+	m_skybox.InitGL();
 }
 
 void CChildView::RenderGL()
@@ -124,6 +131,21 @@ void CChildView::RenderGL()
 	glBindTexture(GL_TEXTURE_2D, m_heightTex.TexName());
 
 	m_sphere.RenderGL();
+
+	m_program = m_skybox.m_program;
+	glUseProgram(m_program);
+	glUniform1i(glGetUniformLocation(m_program, "skybox"), 0);
+
+	m_nPVM = glGetUniformLocation(m_program, "mP");
+	m_nVM = glGetUniformLocation(m_program, "mV");
+	glUniformMatrix4fv(m_nPVM, 1, GL_FALSE, value_ptr(m_mProjection));
+	glm::mat4 view = glm::mat4(glm::mat3(m_mVM));
+	glUniformMatrix4fv(m_nVM, 1, GL_FALSE, value_ptr(view));
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeTex.TexName());
+	glDepthFunc(GL_LEQUAL);
+	m_skybox.RenderGL();
+	glDepthFunc(GL_LESS);
 }
 
 void CChildView::CleanGL()
@@ -133,4 +155,6 @@ void CChildView::CleanGL()
 	m_sphere.CleanGL();
 	m_sphereTex.Clear();
 	m_heightTex.Clear();
+	m_skybox.CleanGL();
+	m_cubeTex.Clear();
 }
